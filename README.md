@@ -22,16 +22,16 @@ A lightweight, containerized Hardware-in-the-Loop (HIL) Digital Twin and telemet
 
 ---
 
-## Under-the-Hood Mechanics
+## Implementation Details
 
-The setup consists of three distinct layers handling data generation, industrial transport, and storage/visualization:
+The setup consists of three distinct layers handling data generation, transport, and storage/visualization:
 
 ### Layer 1: Kinematic & Physical Simulation (`simulation_node.py`)
 - **Role:** Software representation of the physical robot arm.
 - **Function:** 
   - Simulates a **2-DOF (Two Degrees of Freedom) manipulator**.
-  - Updates joint angles ($\theta_1, \theta_2$) using continuous sinusoidal functions.
-  - Computes end-effector tip position ($X, Y$) using forward kinematics (trigonometry: $\sin, \cos$).
+  - Updates joint angles ($\theta_1, \theta_2$) using sinusoidal functions.
+  - Computes end-effector tip position ($X, Y$) using forward kinematics.
   - Simulates motor thermal drift (gradual temperature increase due to simulated friction and electrical resistance).
 
 ### Layer 2: Asynchronous OPC UA Industrial Server (`opcua_bridge_server.py`)
@@ -47,19 +47,6 @@ The setup consists of three distinct layers handling data generation, industrial
   - **Gateway Daemon:** An asynchronous Python daemon polls OPC UA tags at 10 Hz and writes time-series metrics.
   - **InfluxDB v2:** A time-series database running on port `8086`, optimized for high-write, timestamped sensor data.
   - **Grafana:** A web server running on port `3000` that queries InfluxDB via Flux language every 1–2 seconds to render real-time SCADA visualization curves.
-
----
-
-## Docker Environment
-
-Docker provides environment isolation and simple deployment (`docker compose up -d`) without needing manual system-level software installations on the host OS.
-
-### Programs Running Inside Docker Containers:
-1. **InfluxDB Container (`port 8086`):** Database engine storing time-series metrics in persistent volumes.
-2. **Grafana Container (`port 3000`):** Web server displaying dashboard UI and executing Flux queries.
-
-### Programs Running Outside Docker (Host OS):
-- Python scripts (`opcua_bridge_server.py` and `opcua_to_influx.py`) run directly in host system terminals, communicating with Dockerized services over `localhost`.
 
 ---
 
